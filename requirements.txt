@@ -1,0 +1,8 @@
+torch==2.2.0+cu118
+transformers==4.40.0
+accelerate==0.29.0
+gradio==4.24.0
+fastapi==0.110.0
+uvicorn==0.29.0
+huggingface-hub==0.22.0
+python-dotenv==1.0.0
