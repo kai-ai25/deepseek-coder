@@ -1,24 +1,57 @@
 #!/bin/bash
+set -euo pipefail
 
-# --- System Setup ---
-sudo apt update && sudo apt install -y \
+# ======================
+# SYSTEM DEPENDENCIES
+# ======================
+echo "🛠️ Installing system packages..."
+sudo apt-get update && sudo apt-get install -y \
     python3-pip \
+    python3-dev \
     git-lfs \
-    nvidia-cuda-toolkit-12-3
+    nvidia-cuda-toolkit-12-3 \
+    htop \
+    tmux \
+    jq \
+    curl \
+    build-essential
 
-# --- Model Download ---
+# ======================
+# GIT LFS SETUP
+# ======================
+echo "🔧 Configuring Git LFS..."
+git lfs install --skip-repo
+git config --global credential.helper store
+git config --global lfs.concurrenttransfers 8
+
+# ======================
+# MODEL DOWNLOAD
+# ======================
 mkdir -p /workspace/models
-if [ ! -f "/workspace/models/config.json" ]; then
-    git lfs install
-    huggingface-cli download $MODEL_NAME \
-        --local-dir /workspace/models \
-        --local-dir-use-symlinks False \
-        --resume-download
+cd /workspace/models
+
+if [ ! -f "config.json" ]; then
+    echo "⬇️ Downloading model..."
+    git lfs clone https://huggingface.co/$MODEL_NAME .
+else
+    echo "🔄 Model exists, pulling updates..."
+    git pull
 fi
 
-# --- Python Env ---
+# ======================
+# PYTHON ENVIRONMENT
+# ======================
+echo "🐍 Setting up Python..."
+pip install --upgrade pip
 pip install -r /workspace/requirements.txt \
     --extra-index-url https://download.pytorch.org/whl/cu118
 
-# --- Permissions ---
-chmod +x /workspace/runpod/start.sh
+# ======================
+# VERIFICATION
+# ======================
+echo "✅ Verifying installations..."
+python3 -c "
+import torch
+assert torch.cuda.is_available(), 'CUDA not available'
+print(f'Torch {torch.__version__} | CUDA {torch.version.cuda}')
+"
