@@ -1,16 +1,18 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from src.core.model import load_model
 import torch
 
 app = FastAPI()
-model, tokenizer = load_model()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-)
+# Load model with error handling
+try:
+    model, tokenizer = load_model()
+except Exception as e:
+    raise RuntimeError(f"Model loading failed: {str(e)}")
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
 
 @app.get("/generate")
 async def generate(prompt: str, max_tokens: int = 500):
