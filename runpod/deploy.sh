@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # System deps
-sudo apt-get update && sudo apt-get install -y git-lfs python3-pip
+apt-get update && apt-get install -y git-lfs python3-pip
 
 # Git LFS setup
-sudo git lfs install --system
+git lfs install --system
 git config --global lfs.concurrenttransfers 8
 
 # Model download
